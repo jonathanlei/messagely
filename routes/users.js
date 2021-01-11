@@ -3,7 +3,7 @@
 const Router = require("express").Router;
 const router = new Router();
 const User = require("../models/user");
-const { authenticateJWT, ensureLoggedIn, ensureCorrectUser } = require("../middleware/auth");
+const { ensureLoggedIn, ensureCorrectUser } = require("../middleware/auth");
 
 
 /** GET / - get list of users.
@@ -25,7 +25,6 @@ router.get("/",
  *
  **/
 router.get("/:username",
-  ensureLoggedIn,
   ensureCorrectUser,
   async function (req, res, next) {
     const username = req.params.username;
@@ -44,7 +43,6 @@ router.get("/:username",
  *
  **/
 router.get("/:username/to",
-  ensureLoggedIn,
   ensureCorrectUser,
   async function (req, res, next) {
     const username = req.params.username;
@@ -64,8 +62,6 @@ router.get("/:username/to",
  *
  **/
 router.get("/:username/from",
-  authenticateJWT,
-  ensureLoggedIn,
   ensureCorrectUser,
   async function (req, res, next) {
     const username = req.params.username;

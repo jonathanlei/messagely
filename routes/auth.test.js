@@ -79,3 +79,4 @@ describe("Auth Routes Test", function () {
 afterAll(async function () {
   await db.end();
 });
+

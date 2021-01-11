@@ -68,6 +68,7 @@ describe("Test User class", function () {
       username: "test",
       first_name: "Test",
       last_name: "Testy",
+      phone: "+14155550000"
     }]);
   });
 });
