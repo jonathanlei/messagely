@@ -36,7 +36,7 @@ function ensureLoggedIn(req, res, next) {
   }
 }
 
-/** Middleware: Requires user is user for route. */
+/** Middleware: Required user is user for route. */
 
 function ensureCorrectUser(req, res, next) {
   try {
