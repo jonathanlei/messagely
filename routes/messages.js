@@ -62,13 +62,12 @@ router.post("/:id/read",
   ensureLoggedIn,
   async function(req,res, next){
     const {id} = req.params;
-    // change the naming to according to doc string
     const message = await Message.get(id);
     const currentUsername = res.locals.user.username;
 
     if (message.to_user.username === res.locals.user.username){
       const readMessage = await Message.markRead(id);
-      return res.json({readMessage});
+      return res.json({message: readMessage});
     }
     throw new UnauthorizedError(`${currentUsername} is not authorized to make this change`);
   })

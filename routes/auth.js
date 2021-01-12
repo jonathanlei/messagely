@@ -32,7 +32,8 @@ router.post("/register", async function (req, res, next) {
   const user = await User.register({ username, password, first_name, last_name, phone });
 
   const token = jwt.sign({ username }, SECRET_KEY);
-  // determine where to have this line
+
+  //TO THINK ABOUT: better to have this code here or in the model?
   User.updateLoginTimestamp(username);
   
   return res.json({ token });
