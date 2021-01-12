@@ -21,5 +21,8 @@
     "twilio": "^3.54.2"
   },
   "keywords": [],
-  "description": ""
+  "description": "",
+  "jest": {
+    "testEnvironment": "node"
+  }
 }

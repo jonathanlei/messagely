@@ -46,7 +46,7 @@ router.post("/",
     const {to_username, body} = req.body;
 
     const message = await Message.create({from_username,to_username,body});
-    return res.json({message});
+    return res.status(201).json({message});
   })
 
 

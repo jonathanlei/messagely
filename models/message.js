@@ -42,6 +42,7 @@ class Message {
 
     const details = { from: fromPhoneNum, to: toPhoneNum, body };
     const sent_at = await Message._sendTwilioMessage(details);
+    // const sent_at = 0;
     // transactional problem
     const result = await db.query(
       `INSERT INTO messages (
@@ -80,9 +81,10 @@ class Message {
       throw err;
     }
     let sent_at;
-    console.log(message);
-    if (message.status === "sent") {
-      sent_at = messsage.date_sent;
+    // console.log(message);
+    if (message.status === "queued") {
+      sent_at = message.dateCreated;
+      // console.log("sent_at", sent_at);
       return sent_at;
     }
     throw new BadRequestError(`Error: ${message.error_message},error_code: ${message.error_code} `)
