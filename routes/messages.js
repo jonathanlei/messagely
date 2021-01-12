@@ -4,7 +4,7 @@ const Router = require("express").Router;
 const router = new Router();
 const Message = require("../models/message.js");
 const {UnauthorizedError} = require("../expressError.js");
-const { ensureLoggedIn, ensureCorrectUser } = require("../middleware/auth");
+const { ensureLoggedIn } = require("../middleware/auth");
  
 /** GET /:id - get detail of message.
  *
@@ -62,6 +62,7 @@ router.post("/:id/read",
   ensureLoggedIn,
   async function(req,res, next){
     const {id} = req.params;
+    // change the naming to according to doc string
     const message = await Message.get(id);
     const currentUsername = res.locals.user.username;
 

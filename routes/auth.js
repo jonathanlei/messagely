@@ -12,7 +12,7 @@ const { UnauthorizedError } = require("../expressError");
 /** POST /login: {username, password} => {token} */
 router.post("/login", async function (req, res, next) {
   const { username, password } = req.body;
-
+// check true instead of truthy 
   if (await User.authenticate(username, password)) {
     const token = jwt.sign({ username }, SECRET_KEY);
     User.updateLoginTimestamp(username);
@@ -32,9 +32,7 @@ router.post("/register", async function (req, res, next) {
   const user = await User.register({ username, password, first_name, last_name, phone });
 
   const token = jwt.sign({ username }, SECRET_KEY);
-  
-  // ???? What does "logs in" mean in the docstring?
-  res.locals.user = user;
+  // determine where to have this line
   User.updateLoginTimestamp(username);
   
   return res.json({ token });
