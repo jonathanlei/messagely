@@ -40,10 +40,10 @@ describe("User Routes Test", function () {
       expect(response.body).toEqual({
         "users": [
           {
-            "username": "test1",
-            "first_name": "Test1",
-            "last_name": "Testy1",
-            "phone": "+14155550000"
+            username: "test1",
+            first_name: "Test1",
+            last_name: "Testy1",
+            phone: "+14155550000"
           }]
       });
     });
