@@ -2,8 +2,16 @@
 
 /** Message class for message.ly */
 
-const { NotFoundError } = require("../expressError");
+const { NotFoundError, BadRequestError } = require("../expressError");
 const db = require("../db");
+/* Twilio setup */
+
+// console.log("process env", process.env);
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+// console.log("account id",accountSid);
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+// console.log("account token",authToken);
+const client = require('twilio')(accountSid, authToken);
 
 /** Message on the site. */
 
@@ -14,28 +22,81 @@ class Message {
    */
 
   static async create({ from_username, to_username, body }) {
-    const result = await db.query(
-          `INSERT INTO messages (from_username,
-                                 to_username,
-                                 body,
-                                 sent_at)
-             VALUES
-               ($1, $2, $3, current_timestamp)
-             RETURNING id, from_username, to_username, body, sent_at`,
-        [from_username, to_username, body]);
 
+    const fromPhoneResult = await db.query(
+      `SELECT phone
+           FROM users
+            WHERE username = $1`,
+      [from_username]);
+    const fromPhoneNum = fromPhoneResult.rows[0].phone;
+    if (!fromPhoneNum) throw new NotFoundError(`${from_username} is not found in the db`);
+
+    const toPhoneResult = await db.query(
+      `SELECT phone
+        FROM users
+        WHERE username = $1`,
+      [to_username]);
+    const toPhoneNum = toPhoneResult.rows[0].phone;
+
+    if (!toPhoneNum) throw new NotFoundError(`${to_username} is not found in the db`);
+
+    const details = { from: fromPhoneNum, to: toPhoneNum, body };
+    const sent_at = await Message._sendTwilioMessage(details);
+    // transactional problem
+    const result = await db.query(
+      `INSERT INTO messages (
+        from_username,
+        to_username,
+        body,
+        sent_at)
+        VALUES
+        ($1, $2, $3, $4)
+        RETURNING 
+        id, 
+        from_username,
+        to_username,
+        body,
+        sent_at`,
+      [from_username, to_username, body, sent_at]);
     return result.rows[0];
   }
+// subclass - SMS messages, as a class method
 
+  /* Takes {from: "+12345678", to: "+12345678", body}
+  makes twilio api call and send a text message
+  return sent_at date string*/
+  static async _sendTwilioMessage({ from, to, body }) {
+    // console.log("to phone number", to);
+    let message;
+    try {
+      message = await client.messages
+        .create({
+          body,
+          from,
+          to
+        });
+    } catch (err) {
+      console.log("failed to connect to twilio API");
+      throw err;
+    }
+    let sent_at;
+    console.log(message);
+    if (message.status === "sent") {
+      sent_at = messsage.date_sent;
+      return sent_at;
+    }
+    throw new BadRequestError(`Error: ${message.error_message},error_code: ${message.error_code} `)
+  }
+//ngrok - free - given portnumber, return the IP address for twillio to make the request to 
   /** Update read_at for message */
 
   static async markRead(id) {
     const result = await db.query(
-          `UPDATE messages
+      `UPDATE messages
            SET read_at = current_timestamp
              WHERE id = $1
              RETURNING id, read_at`,
-        [id]);
+      [id]);
     const message = result.rows[0];
 
     if (!message) throw new NotFoundError(`No such message: ${id}`);
@@ -53,7 +114,7 @@ class Message {
 
   static async get(id) {
     const result = await db.query(
-          `SELECT m.id,
+      `SELECT m.id,
                   m.from_username,
                   f.first_name AS from_first_name,
                   f.last_name AS from_last_name,
@@ -69,7 +130,7 @@ class Message {
                     JOIN users AS f ON m.from_username = f.username
                     JOIN users AS t ON m.to_username = t.username
              WHERE m.id = $1`,
-        [id]);
+      [id]);
 
     let m = result.rows[0];
 
